@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travelling Salesman Problem (TSP)</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:20px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+
+h2{
+    text-align:center;
+}
+
+input{
+    width:60px;
+    text-align:center;
+    padding:5px;
+}
+
+button{
+    padding:10px 20px;
+    background:#007BFF;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    margin:10px;
+}
+
+button:hover{
+    background:#0056b3;
+}
+
+table{
+    border-collapse:collapse;
+    margin:auto;
+}
+
+td,th{
+    border:1px solid black;
+    padding:5px;
+    text-align:center;
+}
+
+.result{
+    margin-top:20px;
+    font-size:18px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Travelling Salesman Problem (Brute Force)</h2>
+
+<label>Number of Cities:</label>
+<input type="number" id="n" min="2" value="4">
+
+<button onclick="createMatrix()">Create Cost Matrix</button>
+
+<div id="matrixArea"></div>
+
+<center>
+<button onclick="solveTSP()">Solve TSP</button>
+</center>
+
+<div id="output" class="result"></div>
+
+</div>
+
+<script>
+
+function createMatrix(){
+
+    let n=parseInt(document.getElementById("n").value);
+
+    let html="<table>";
+
+    html+="<tr><th></th>";
+
+    for(let i=0;i<n;i++)
+        html+="<th>"+String.fromCharCode(65+i)+"</th>";
+
+    html+="</tr>";
+
+    for(let i=0;i<n;i++){
+
+        html+="<tr>";
+
+        html+="<th>"+String.fromCharCode(65+i)+"</th>";
+
+        for(let j=0;j<n;j++){
+
+            if(i==j)
+            html+="<td>∞</td>";
+
+            else
+            html+="<td><input type='number' id='c"+i+"_"+j+"' value='0'></td>";
+        }
+
+        html+="</tr>";
+    }
+
+    html+="</table>";
+
+    document.getElementById("matrixArea").innerHTML=html;
+
+}
+
+function permute(arr){
+
+    if(arr.length==0) return [[]];
+
+    let result=[];
+
+    for(let i=0;i<arr.length;i++){
+
+        let current=arr[i];
+
+        let remaining=arr.slice(0,i).concat(arr.slice(i+1));
+
+        let perms=permute(remaining);
+
+        for(let p of perms)
+            result.push([current,...p]);
+
+    }
+
+    return result;
+}
+
+function solveTSP(){
+
+    let n=parseInt(document.getElementById("n").value);
+
+    let cost=[];
+
+    for(let i=0;i<n;i++){
+
+        cost[i]=[];
+
+        for(let j=0;j<n;j++){
+
+            if(i==j)
+                cost[i][j]=Infinity;
+
+            else
+                cost[i][j]=parseInt(document.getElementById("c"+i+"_"+j).value);
+
+        }
+    }
+
+    let cities=[];
+
+    for(let i=1;i<n;i++)
+        cities.push(i);
+
+    let perms=permute(cities);
+
+    let bestCost=Infinity;
+
+    let bestPath=[];
+
+    for(let p of perms){
+
+        let path=[0,...p,0];
+
+        let total=0;
+
+        for(let i=0;i<n;i++)
+            total+=cost[path[i]][path[i+1]];
+
+        if(total<bestCost){
+
+            bestCost=total;
+            bestPath=path;
+
+        }
+
+    }
+
+    let names=bestPath.map(x=>String.fromCharCode(65+x));
+
+    let html="<h3>Optimal Tour</h3>";
+
+    html+="<b>"+names.join(" → ")+"</b>";
+
+    html+="<br><br>";
+
+    html+="<b>Minimum Cost = "+bestCost+"</b>";
+
+    html+="<br><br>";
+
+    html+="<table>";
+
+    html+="<tr><th>From</th><th>To</th><th>Cost</th></tr>";
+
+    for(let i=0;i<n;i++){
+
+        html+="<tr>";
+
+        html+="<td>"+names[i]+"</td>";
+
+        html+="<td>"+names[i+1]+"</td>";
+
+        html+="<td>"+cost[bestPath[i]][bestPath[i+1]]+"</td>";
+
+        html+="</tr>";
+
+    }
+
+    html+="</table>";
+
+    document.getElementById("output").innerHTML=html;
+
+}
+
+createMatrix();
+
+</script>
+
+</body>
+</html>
